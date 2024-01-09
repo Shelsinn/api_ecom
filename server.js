@@ -7,6 +7,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 
 // Import des routes pour l'authentification.
+const authRoutes = require("./routes/auth.route");
 
 // Import de la configuration de la BDD.
 const connectDB = require("./config/db");
@@ -22,6 +23,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Utilisation des routes pour l'authentification.
+app.use("/api", authRoutes);
 
 // Configuration des options cors.
 const corsOptions = {
@@ -41,6 +43,7 @@ const PORT = process.env.PORT || 5200;
 const start = async () => {
   try {
     // Connexion à la BDD.
+    await connectDB();
     console.log("Connexion à la BDD réussie.");
     // Démarrage du serveur sur le port spécifié.
     app.listen(PORT, () => console.log(`Le serveur a démarré sur le port ${PORT}.`));
