@@ -5,7 +5,7 @@ FROM node:18
 WORKDIR /usr/src/app
 
 # Copie des fichiers package.json et package-lock.json pour installer les dépendances.
-COPY package*.json ./
+COPY package*.json yarn.lock* ./
 
 # Installation des dépendances.
 RUN yarn install
