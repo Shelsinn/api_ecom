@@ -9,6 +9,9 @@ const cors = require('cors');
 // Import des routes pour l'authentification.
 const authRoutes = require('./routes/auth.route');
 
+// Import des routes pour la création des produits.
+const productRoutes = require('./routes/product.route');
+
 // Import de la configuration de la BDD.
 const connectDB = require('./config/db');
 
@@ -24,6 +27,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Utilisation des routes pour l'authentification.
 app.use('/api', authRoutes);
+
+// Utilisation des routes pour la création de produits.
+app.use('/api', productRoutes);
 
 // Configuration des options cors.
 const corsOptions = {

@@ -5,7 +5,7 @@ const authModel = require('../models/auth.model');
 const { validationResult } = require('express-validator');
 
 // Import du modèle de hachage bcrypt.
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // Import du module JWT pour les tokens.
 const jwt = require('jsonwebtoken');
