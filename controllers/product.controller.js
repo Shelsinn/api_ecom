@@ -34,3 +34,16 @@ module.exports.createProduct = async (req, res) => {
 		res.status(500).json({ message: 'Erreur lors de la création du produit.' });
 	}
 };
+
+// Fonction pour récupérer tous les produits.
+module.exports.getAllProducts = async (req, res) => {
+	try {
+		// Récupération de tous les produits.
+		const products = await productModel.find();
+		// Réponse de succès.
+		res.status(200).json({ message: 'Liste des produits', products });
+	} catch (error) {
+		console.error('Erreur lors de la récupération des produits: ', error.message);
+		res.status(500).json({ message: 'Erreur lors de la récupération des produits.' });
+	}
+};
