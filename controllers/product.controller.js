@@ -66,3 +66,30 @@ module.exports.getProductById = async (req, res) => {
 		res.status(500).json({ message: 'Erreur lors de la récupération du produit.' });
 	}
 };
+
+// Fonction pour supprimer un produit avec son ID.
+module.exports.deleteProduct = async (req, res) => {
+	try {
+		// Vérifier si l'utilisateur est admin.
+		if (req.user.role !== 'admin') {
+			// Retour d'un message d'erreur.
+			return res.status(403).json({
+				message: 'Action non autorisée. Seul un admin peut supprimer un produit.',
+			});
+		}
+		// Déclaration de la variable qui va rechercher l'id du produit.
+		const productId = req.params.id;
+
+		// Déclaration de la variable pour supprimer le produit.
+		const deletedProduct = await productModel.findByIdAndDelete(productId);
+
+		// Condition si le produit est introuvable.
+		if (!deletedProduct) {
+			return res.status(404).json({ message: 'Produit non trouvé.' });
+		}
+		res.status(200).json({ message: 'Produit supprimé avec succès.' });
+	} catch (error) {
+		console.error('Erreur lors de la suppression du produit: ', error.message);
+		res.status(500).json({ message: 'Erreur lors de la suppression du produit.' });
+	}
+};

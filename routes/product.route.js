@@ -17,4 +17,7 @@ router.get('/all-products', productController.getAllProducts);
 // Route pour récupérer un seul produit avec son ID.
 router.get('/product/:id', productController.getProductById);
 
+// Route pour supprimer un produit avec son ID en tant qu'admin.
+router.delete('/delete-product/:id', authMiddleware.authenticate, productController.deleteProduct);
+
 module.exports = router;
