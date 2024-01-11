@@ -47,3 +47,22 @@ module.exports.getAllProducts = async (req, res) => {
 		res.status(500).json({ message: 'Erreur lors de la récupération des produits.' });
 	}
 };
+
+// Fonction pour récupérer un seul produit avec son ID.
+module.exports.getProductById = async (req, res) => {
+	try {
+		// Déclaration de la variable qui va rechercher l'ID du produit.
+		const productId = req.params.id;
+		// Récupération du produit par son ID.
+		const product = await productModel.findById(productId);
+		// Condition si le produit est introuvable.
+		if (!product) {
+			return res.status(404).json({ message: 'Produit non trouvé.' });
+		}
+		// Réponse de succès.
+		res.status(200).json({ message: 'Produit récupéré avec succès.', product });
+	} catch (error) {
+		console.error('Erreur lors de la récupération du produit: ', error.message);
+		res.status(500).json({ message: 'Erreur lors de la récupération du produit.' });
+	}
+};

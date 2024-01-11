@@ -14,4 +14,7 @@ router.post(
 // Route pour récupérer tous les produits.
 router.get('/all-products', productController.getAllProducts);
 
+// Route pour récupérer un seul produit avec son ID.
+router.get('/product/:id', productController.getProductById);
+
 module.exports = router;
