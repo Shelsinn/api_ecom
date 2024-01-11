@@ -20,4 +20,12 @@ router.get('/product/:id', productController.getProductById);
 // Route pour supprimer un produit avec son ID en tant qu'admin.
 router.delete('/delete-product/:id', authMiddleware.authenticate, productController.deleteProduct);
 
+// Route pour modifier un produit avec son ID en tant qu'admin.
+router.put(
+	'/update-product/:id',
+	authMiddleware.authenticate,
+	upload.single('image'),
+	productController.updateProduct
+);
+
 module.exports = router;
