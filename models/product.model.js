@@ -3,6 +3,10 @@ const mongoose = require('mongoose');
 
 // Définition du schéma du produit.
 const productSchema = new mongoose.Schema({
+	createdBy: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'User',
+	},
 	title: {
 		type: String,
 		required: [true, 'Veuillez renseigner le nom du produit.'],
@@ -15,13 +19,8 @@ const productSchema = new mongoose.Schema({
 		type: Number,
 		required: [true, 'Veuillez renseigner un prix.'],
 	},
-	// image: {
-	// 	type: String,
-	// 	required: true,
-	// },
-	createdBy: {
-		type: mongoose.Schema.Types.ObjectId,
-		ref: 'User',
+	imageUrl: {
+		type: String,
 	},
 	timestamp: {
 		type: Date,
