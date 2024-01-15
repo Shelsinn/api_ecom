@@ -6,6 +6,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
+// Import de Cloudinary.
+const cloudinary = require('cloudinary').v2;
+
 // Import des routes pour l'authentification.
 const authRoutes = require('./routes/auth.route');
 
@@ -30,6 +33,13 @@ app.use('/api', authRoutes);
 
 // Utilisation des routes pour la création de produits.
 app.use('/api', productRoutes);
+
+// Configuration de Cloudinary.
+cloudinary.config({
+	cloud_name: process.env.CLOUD_NAME,
+	api_key: process.env.API_KEY,
+	api_secret: process.env.API_SECRET,
+});
 
 // Configuration des options cors.
 const corsOptions = {
