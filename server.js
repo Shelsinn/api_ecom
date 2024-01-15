@@ -6,9 +6,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
-// Import de Cloudinary.
-const cloudinary = require('cloudinary').v2;
-
 // Import des routes pour l'authentification.
 const authRoutes = require('./routes/auth.route');
 
@@ -17,6 +14,9 @@ const productRoutes = require('./routes/product.route');
 
 // Import de la configuration de la BDD.
 const connectDB = require('./config/db');
+
+// Import de Cloudinary.
+const cloudinary = require('cloudinary').v2;
 
 // Initialisation de l'application Express.
 const app = express();
@@ -27,6 +27,18 @@ app.use(express.json());
 // Middleware pour parser les cors de requêtes.
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Configuration des options cors.
+const corsOptions = {
+	origin: '*',
+	credentials: true,
+	optionsSuccessStatus: 200,
+	methods: 'GET, HEAD, PUT, PATCH, POST, DELETE',
+	preflightContinue: false,
+};
+
+// Middleware pour gérer les cors.
+app.use(cors(corsOptions));
 
 // Utilisation des routes pour l'authentification.
 app.use('/api', authRoutes);
@@ -40,17 +52,6 @@ cloudinary.config({
 	api_key: process.env.API_KEY,
 	api_secret: process.env.API_SECRET,
 });
-
-// Configuration des options cors.
-const corsOptions = {
-	credentials: true,
-	optionsSuccessStatus: 200,
-	methods: 'GET, HEAD, PUT, PATCH, POST, DELETE',
-	preflightContinue: false,
-};
-
-// Middleware pour gérer les cors.
-app.use(cors(corsOptions));
 
 // Définition du port de démarrage du serveur.
 const PORT = process.env.PORT || 5200;
