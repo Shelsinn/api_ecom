@@ -84,12 +84,32 @@ module.exports.deleteProduct = async (req, res) => {
 		const productId = req.params.id;
 
 		// Déclaration de la variable pour supprimer le produit.
+		const product = await productModel.findById(productId);
+
+		// Vérifier si le produit existe.
+		if (!product) {
+			return res.status(404).json({ message: 'Produit non trouvé.' });
+		}
+
+		// Rechercher l'id de l'image sur Cloudinary.
+		const imagePublicId = product.imagePublicId;
+
+		// Suppression du produit.
 		const deletedProduct = await productModel.findByIdAndDelete(productId);
 
 		// Condition si le produit est introuvable.
 		if (!deletedProduct) {
 			return res.status(404).json({ message: 'Produit non trouvé.' });
 		}
+		console.log('Image Public ID: ', imagePublicId);
+		console.log('Produit supprimé avec succès.');
+
+		// Suppression de l'image dans Cloudinary.
+		if (imagePublicId) {
+			await cloudinary.uploader.destroy(imagePublicId);
+			console.log('Image supprimée de Cloudinary.');
+		}
+
 		res.status(200).json({ message: 'Produit supprimé avec succès.' });
 	} catch (error) {
 		console.error('Erreur lors de la suppression du produit: ', error.message);
@@ -125,11 +145,12 @@ module.exports.updateProduct = async (req, res) => {
 		// Vérifier si une nouvelle image est téléchargée et mettre à jour le chemin de l'image.
 		if (req.file) {
 			// Supprimer l'ancienne image s'il y en a une.
-			if (modifiedProduct.image) {
-				fs.unlinkSync(modifiedProduct.imageUrl);
+			if (modifiedProduct.imagePublicId) {
+				await cloudinary.uploader.destroy(modifiedProduct.imagePublicId);
 			}
-			// Ajouter la nouvelle image avec le nouveau chemin.
-			modifiedProduct.imageUrl = req.file.path;
+			// Redonne une nouvelle URL et un nouvel id à l'image.
+			modifiedProduct.imageUrl = req.cloudinaryUrl;
+			modifiedProduct.imagePublicId = req.file.public_id;
 		}
 
 		// Sauvegarder les modifications dans la BDD.
