@@ -38,6 +38,19 @@ router.get('/dashboard', authMiddleware.authenticate, (req, res) => {
 
 // Admin 2
 // Route pour voir tous les utilisateurs.
+router.get('/all-users', authMiddleware.authenticate, authController.getAllUsers, (req, res) => {
+	// Vérifier si l'utilisateur est un admin.
+	if (req.user.role === 'admin') {
+		// Définition de req.isAdmin, sera égal à true pour les admins.
+		req.isAdmin = true;
+		// Envoyer une réponse de succès.
+		return res.status(200).json({ message: 'Bienvenue, Admin.' });
+	} else {
+		// Envoyer une réponse pour les utilisateurs non-admins.
+		return res.status(403).json({ message: "Action non autorisée sans droits d'admin." });
+	}
+});
+
 // Route pour supprimer un utilisateur.
 
 // User

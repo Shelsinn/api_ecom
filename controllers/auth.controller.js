@@ -200,3 +200,23 @@ module.exports.delete = async (req, res) => {
 		res.status(500).json({ message: "Erreur lors de la suppression de l'utilisateur." });
 	}
 };
+
+// Fonction pour récupérer tous les utilisateurs en tant qu'admin.
+module.exports.getAllUsers = async (req, res) => {
+	try {
+		// Vérifier si l'utilisateur est admin.
+		if (req.user.role !== 'admin') {
+			// Retour d'un message d'erreur.
+			return res.status(403).json({
+				message: 'Action non autorisée. Seul un admin peut supprimer un produit.',
+			});
+		}
+		// Récupération de tous les produits.
+		const users = await authModel.find();
+		// Réponse de succès.
+		res.status(200).json({ message: 'Liste des utilisateurs', users });
+	} catch (error) {
+		console.error('Erreur lors de la récupération des produits: ', error.message);
+		res.status(500).json({ message: 'Erreur lors de la récupération des utilisateurs.' });
+	}
+};
