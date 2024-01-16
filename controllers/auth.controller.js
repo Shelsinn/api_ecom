@@ -211,10 +211,39 @@ module.exports.getAllUsers = async (req, res) => {
 				message: 'Action non autorisée. Seul un admin peut supprimer un produit.',
 			});
 		}
-		// Récupération de tous les produits.
+		// Récupération de tous les users.
 		const users = await authModel.find();
 		// Réponse de succès.
 		res.status(200).json({ message: 'Liste des utilisateurs', users });
+	} catch (error) {
+		console.error('Erreur lors de la récupération des produits: ', error.message);
+		res.status(500).json({ message: 'Erreur lors de la récupération des utilisateurs.' });
+	}
+};
+
+// Fonction pour récupérer un utilisateur par son ID en atnt qu'admin.
+module.exports.getUser = async (req, res) => {
+	try {
+		// Vérifier si l'utilisateur est admin.
+		if (req.user.role !== 'admin') {
+			// Retour d'un message d'erreur.
+			return res.status(403).json({
+				message: 'Action non autorisée. Seul un admin peut supprimer un produit.',
+			});
+		}
+		// Récupération de l'ID de l'utilisateur.
+		const userId = req.params.id;
+
+		// Déclaration de variable qui va vérifier si l'utilisateur existe.
+		const existingUser = await authModel.findById(userId);
+
+		// Condition si l'utilisateur n'existe pas en BDD.
+		if (!existingUser) {
+			return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+		}
+
+		// Réponse de succès.
+		res.status(200).json({ message: 'Utilisateur: ', existingUser });
 	} catch (error) {
 		console.error('Erreur lors de la récupération des produits: ', error.message);
 		res.status(500).json({ message: 'Erreur lors de la récupération des utilisateurs.' });
