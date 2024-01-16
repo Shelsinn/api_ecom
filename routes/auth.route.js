@@ -59,7 +59,7 @@ router.get('/user/:id', authMiddleware.authenticate, authController.getUser, (re
 // User
 // Route pour ajouter les informations.
 // Route pour lire les informations.
-router.get('/profile/:id', authMiddleware.authenticate, authController.userProfile);
+router.get('/profile/:id', authController.userProfile);
 // Route pour modifier les informations.
 // Route pour supprimer le compte.
 
