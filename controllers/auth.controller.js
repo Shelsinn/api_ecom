@@ -221,7 +221,7 @@ module.exports.getAllUsers = async (req, res) => {
 	}
 };
 
-// Fonction pour récupérer un utilisateur par son ID en atnt qu'admin.
+// Fonction pour récupérer un utilisateur par son ID en tant qu'admin.
 module.exports.getUser = async (req, res) => {
 	try {
 		// Vérifier si l'utilisateur est admin.
@@ -245,7 +245,50 @@ module.exports.getUser = async (req, res) => {
 		// Réponse de succès.
 		res.status(200).json({ message: 'Utilisateur: ', existingUser });
 	} catch (error) {
-		console.error('Erreur lors de la récupération des produits: ', error.message);
-		res.status(500).json({ message: 'Erreur lors de la récupération des utilisateurs.' });
+		console.error("Erreur lors de la récupération de l'utilisateur: ", error.message);
+		res.status(500).json({ message: "Erreur lors de la récupération de l'utilisateur." });
+	}
+};
+
+// Fonction pour récupérer son profil en tant qu'user avec son ID.
+module.exports.userProfile = async (req, res) => {
+	try {
+		// Récupération de l'ID de l'utilisateur.
+		const userId = req.params.id;
+
+		// Déclaration de variable qui va vérifier si l'utilisateur existe.
+		const existingUser = await authModel.findById(userId);
+
+		// Condition si l'utilisateur n'existe pas en BDD.
+		if (!existingUser) {
+			return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+		}
+
+		// Réponse de succès.
+		res.status(200).json({ message: 'Utilisateur: ', existingUser });
+	} catch (error) {
+		console.error("Erreur lors de la récupération de l'utilisateur: ", error.message);
+		res.status(500).json({ message: "Erreur lors de la récupération de l'utilisateur." });
+	}
+};
+
+// Fonction pour le dashboard.
+module.exports.dashboard = async (req, res) => {
+	try {
+		// Verifier si l'utilisateur est un admin
+		if (req.user.role === 'admin') {
+			// Definition de req.isAdmin sera egal a true pour les admins
+			req.isAdmin = true;
+			// Envoyer une réponse de succès
+			return res.status(200).json({ message: 'Bienvenue Admin' });
+		} else {
+			// Envoyer une réponse pour les utilisateurs non admin
+			return res.status(403).json({
+				message: 'Action non autorisée, seuls les admins peuvent accéder à cette page.',
+			});
+		}
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({ message: 'Erreur lors de la connexion.' });
 	}
 };
