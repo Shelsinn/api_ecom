@@ -10,8 +10,8 @@ const bcrypt = require('bcryptjs');
 // Import du module JWT pour les tokens.
 const jwt = require('jsonwebtoken');
 
-// Import du module validator pour la validation des emails.
-const validator = require('validator');
+// Import de Cloudinary.
+const cloudinary = require('cloudinary').v2;
 
 // Fonction pour l'inscription.
 module.exports.register = async (req, res) => {
@@ -25,31 +25,41 @@ module.exports.register = async (req, res) => {
 			return res.status(400).json({ errors: errors.array() });
 		}
 		// Récupération des données du formulaire.
-		const { lastname, firstname, email, password } = req.body;
-		// Vérification de la longueur du mot de passe avec une condition.
-		if (password.length < 6) {
-			// Vérification de la longueur du mot de passe. (6 caractères minimum)
-			// Renvoie une erreur si le mot de passe est trop court.
-			return res
-				.status(400)
-				.json({ message: 'Le mot de passe doit contenir au moins 6 caractères.' });
-		}
-		// Vérification si l'email est valide.
-		if (!validator.isEmail(email)) {
-			// Renvoie une erreur si l'email n'est pas valide.
-			return res.status(400).json({ message: 'Veuillez entrer un email valide.' });
-		}
-		// Vérification de l'email s'il existe déjà dans la BDD.
-		const existingUser = await authModel.findOne({ email });
+		const { lastname, firstname, email, password, birthday, address, zipcode, city, phone } =
+			req.body;
 
-		if (existingUser) {
+		// Vérifier si une image est téléversée.
+		if (!req.cloudinaryUrl || !req.file) {
+			return res.status(400).json({ message: 'Veuillez ajouter une image.' });
+		}
+
+		// Vérification de l'email s'il existe déjà dans la BDD.
+		const existingAuth = await authModel.findOne({ email });
+
+		if (existingAuth) {
 			// Renvoie une erreur si l'email existe déjà.
 			return res.status(400).json({ message: 'Cet email est déjà utilisé.' });
 		}
+
+		// Utilisation de l'URL de Cloudinary et du public_id provenant du middleware.
+		const avatarUrl = req.cloudinaryUrl;
+		const avatarPublicId = req.file.public_id;
 		// Création d'un nouvel utilisateur.
-		const user = authModel.create({ lastname, firstname, email, password });
+		const user = authModel.create({
+			lastname,
+			firstname,
+			email,
+			password,
+			birthday,
+			address,
+			zipcode,
+			city,
+			phone,
+			avatarUrl,
+			avatarPublicId,
+		});
 		// Renvoie une réponse positive si l'utilisateur est bien enregistré.
-		res.status(201).json({ message: 'Compte utilisateur créé avec succès.', user });
+		res.status(201).json({ message: 'Compte utilisateur créé avec succès.', user: user });
 	} catch (error) {
 		// Renvoie une erreur s'il y a un problème lors de l'enregistrement de l'utilisateur.
 		res.status(500).json({ message: "Erreur lors de l'enregistrement de l'utilisateur." });
@@ -102,5 +112,68 @@ module.exports.login = async (req, res) => {
 		console.error('Erreur lors de la connexion: ', error.message);
 		// Renvoie une erreur s'il y a un problème lors de la connexion de l'utilisateur.
 		res.status(500).json({ message: 'Erreur lors de la connexion.' });
+	}
+};
+
+
+// Fonction pour la modification du profil.
+module.exports.update = async (req, res) => {
+	try {
+		// Déclaration de variables pour la gestion des erreurs de validation.
+		const errors = validationResult(req);
+
+		// Vérification s'il y a des erreurs de validation.
+		if (!errors.isEmpty()) {
+			// Renvoi des erreurs de validation.
+			return res.status(400).json({ errors: errors.array() });
+		}
+
+		// Récupération de l'ID de l'utilisateur.
+		const userId = req.params.id;
+
+		// Récupération des données du formulaire.
+		const { lastname, firstname, email, birthday, address, zipcode, city, phone } = req.body;
+
+		// Vérifier si l'utilisateur existe avant de modifier.
+		const existingUser = await authModel.findById(userId);
+
+		// Condition si l'utilisateur n'existe pas en BDD.
+		if (!existingUser) {
+			return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+		}
+
+		// Supprimer l'ancienne image sur Cloudinary si elle existe.
+		if (req.file) {
+			// Supprimer l'ancienne image s'il y en a une.
+			if (existingUser.avatarPublicId) {
+				await cloudinary.uploader.destroy(existingUser.avatarPublicId);
+			}
+			// Redonne une nouvelle URL et un nouvel id à l'image.
+			existingUser.avatarUrl = req.cloudinaryUrl;
+			existingUser.avatarPublicId = req.file.public_id;
+		}
+
+		// Mettre à jour les infos de l'utilisateur.
+		existingUser.lastname = lastname;
+		existingUser.firstname = firstname;
+		existingUser.birthday = birthday;
+		existingUser.address = address;
+		existingUser.zipcode = zipcode;
+		existingUser.city = city;
+		existingUser.phone = phone;
+
+		// Mettre à jour l'email uniquement si fourni dans la requête.
+		if (email) {
+			existingUser.email = email;
+		}
+
+		// Sauvegarder les modifs.
+		const updateProfile = await existingUser.save();
+
+		// Code de réussite avec le log.
+		res.status(200).json({ message: 'Profil modifié avec succès: ', user: updateProfile });
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({ message: 'Erreur lors de la mise à jour du profil.' });
 	}
 };

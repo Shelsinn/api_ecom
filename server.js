@@ -68,5 +68,6 @@ const start = async () => {
 		console.log(error);
 	}
 };
+
 // Appel de la fonction pour démarrer le serveur.
 start();

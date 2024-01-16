@@ -10,12 +10,6 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 const cloudinaryUpload = async (req, res, next) => {
-	if (req.user.role !== 'admin') {
-		// Retour d'un message d'erreur.
-		return res
-			.status(403)
-			.json({ message: 'Action non autorisée. Seul un admin peut envoyer une image.' });
-	}
 	try {
 		console.log('Début du middleware cloudinaryUpload');
 		// Utilisation de multer pour gérer le fichier depuis la requête.
