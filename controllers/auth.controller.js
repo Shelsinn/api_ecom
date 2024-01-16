@@ -208,7 +208,7 @@ module.exports.getAllUsers = async (req, res) => {
 		if (req.user.role !== 'admin') {
 			// Retour d'un message d'erreur.
 			return res.status(403).json({
-				message: 'Action non autorisée. Seul un admin peut supprimer un produit.',
+				message: 'Action non autorisée. Seul un admin peut réaliser cette action.',
 			});
 		}
 		// Récupération de tous les users.
@@ -216,7 +216,7 @@ module.exports.getAllUsers = async (req, res) => {
 		// Réponse de succès.
 		res.status(200).json({ message: 'Liste des utilisateurs', users });
 	} catch (error) {
-		console.error('Erreur lors de la récupération des produits: ', error.message);
+		console.error('Erreur lors de la récupération des utilisateurs: ', error.message);
 		res.status(500).json({ message: 'Erreur lors de la récupération des utilisateurs.' });
 	}
 };
@@ -228,7 +228,7 @@ module.exports.getUser = async (req, res) => {
 		if (req.user.role !== 'admin') {
 			// Retour d'un message d'erreur.
 			return res.status(403).json({
-				message: 'Action non autorisée. Seul un admin peut supprimer un produit.',
+				message: 'Action non autorisée. Seul un admin peut réaliser cette action.',
 			});
 		}
 		// Récupération de l'ID de l'utilisateur.

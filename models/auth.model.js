@@ -92,8 +92,8 @@ authSchema.methods.comparePassword = async function (paramPassword) {
 	}
 };
 
-// Export du modèle, du schéma et mise dans la variable User.
+// Export du modèle, du schéma et mise dans la variable Auth.
 const Auth = mongoose.model('Auth', authSchema);
 
-// Export de la variable User.
+// Export de la variable Auth.
 module.exports = Auth;

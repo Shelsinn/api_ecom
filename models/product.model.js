@@ -32,8 +32,8 @@ const productSchema = new mongoose.Schema({
 	},
 });
 
-// Export du modèle, du schéma et mise dans la variable User.
+// Export du modèle, du schéma et mise dans la variable Product.
 const Product = mongoose.model('Product', productSchema);
 
-// Export de la variable User.
+// Export de la variable Product.
 module.exports = Product;
