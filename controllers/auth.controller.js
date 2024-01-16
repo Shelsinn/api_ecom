@@ -115,7 +115,6 @@ module.exports.login = async (req, res) => {
 	}
 };
 
-
 // Fonction pour la modification du profil.
 module.exports.update = async (req, res) => {
 	try {
@@ -175,5 +174,29 @@ module.exports.update = async (req, res) => {
 	} catch (error) {
 		console.error(error);
 		res.status(500).json({ message: 'Erreur lors de la mise à jour du profil.' });
+	}
+};
+
+// Fonction pour la suppression du profil.
+module.exports.delete = async (req, res) => {
+	try {
+		// Récupération de l'ID de l'utilisateur.
+		const userId = req.params.id;
+
+		// Déclaration de variable qui va vérifier si l'utilisateur existe.
+		const existingUser = await authModel.findById(userId);
+
+		// Suppression de l'avatar de Cloudinary si celui-ci existe.
+		if (existingUser.avatarPublicId) {
+			await cloudinary.uploader.destroy(existingUser.avatarPublicId);
+		}
+
+		// Supprimer l'utilisateur de la BDD.
+		await authModel.findByIdAndDelete(userId);
+
+		// Message de succès.
+		res.status(200).json({ message: 'Utilisateur supprimé avec succès.' });
+	} catch (error) {
+		res.status(500).json({ message: "Erreur lors de la suppression de l'utilisateur." });
 	}
 };

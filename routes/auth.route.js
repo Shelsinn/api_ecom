@@ -13,7 +13,8 @@ router.post('/login', authController.login);
 // Route pour la modification du profil.
 router.put('/update/:id', cloudinaryUpload, authController.update);
 
-// Route pour le mot de passe oublié.
+// Route pour supprimer un profil.
+router.delete('/delete/:id', authController.delete);
 
 // Route protégée
 router.get('/dashboard', authMiddleware.authenticate, (req, res) => {
