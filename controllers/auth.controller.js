@@ -115,6 +115,28 @@ module.exports.login = async (req, res) => {
 	}
 };
 
+// Fonction pour récupérer son profil en tant qu'user avec son ID.
+module.exports.userProfile = async (req, res) => {
+	try {
+		// Récupération de l'ID de l'utilisateur.
+		const userId = req.params.id;
+
+		// Déclaration de variable qui va vérifier si l'utilisateur existe.
+		const existingUser = await authModel.findById(userId);
+
+		// Condition si l'utilisateur n'existe pas en BDD.
+		if (!existingUser) {
+			return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+		}
+
+		// Réponse de succès.
+		res.status(200).json({ message: 'Utilisateur: ', existingUser });
+	} catch (error) {
+		console.error("Erreur lors de la récupération de l'utilisateur: ", error.message);
+		res.status(500).json({ message: "Erreur lors de la récupération de l'utilisateur." });
+	}
+};
+
 // Fonction pour la modification du profil.
 module.exports.update = async (req, res) => {
 	try {
@@ -201,6 +223,27 @@ module.exports.delete = async (req, res) => {
 	}
 };
 
+// Fonction pour le dashboard.
+module.exports.dashboard = async (req, res) => {
+	try {
+		// Verifier si l'utilisateur est un admin
+		if (req.user.role === 'admin') {
+			// Definition de req.isAdmin sera egal a true pour les admins
+			req.isAdmin = true;
+			// Envoyer une réponse de succès
+			return res.status(200).json({ message: 'Bienvenue Admin' });
+		} else {
+			// Envoyer une réponse pour les utilisateurs non admin
+			return res.status(403).json({
+				message: 'Action non autorisée, seuls les admins peuvent accéder à cette page.',
+			});
+		}
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({ message: 'Erreur lors de la connexion.' });
+	}
+};
+
 // Fonction pour récupérer tous les utilisateurs en tant qu'admin.
 module.exports.getAllUsers = async (req, res) => {
 	try {
@@ -250,13 +293,33 @@ module.exports.getUser = async (req, res) => {
 	}
 };
 
-// Fonction pour récupérer son profil en tant qu'user avec son ID.
-module.exports.userProfile = async (req, res) => {
+// Fonction pour modifier un utilisateur en tant qu'admin.
+module.exports.adminUpdate = async (req, res) => {
 	try {
+		// Vérifier si l'utilisateur est admin.
+		if (req.user.role !== 'admin') {
+			// Retour d'un message d'erreur.
+			return res.status(403).json({
+				message: 'Action non autorisée. Seul un admin peut réaliser cette action.',
+			});
+		}
+
+		// Déclaration de variables pour la gestion des erreurs de validation.
+		const errors = validationResult(req);
+
+		// Vérification s'il y a des erreurs de validation.
+		if (!errors.isEmpty()) {
+			// Renvoi des erreurs de validation.
+			return res.status(400).json({ errors: errors.array() });
+		}
+
 		// Récupération de l'ID de l'utilisateur.
 		const userId = req.params.id;
 
-		// Déclaration de variable qui va vérifier si l'utilisateur existe.
+		// Récupération des données du formulaire.
+		const { lastname, firstname, email, birthday, address, zipcode, city, phone } = req.body;
+
+		// Vérifier si l'utilisateur existe avant de modifier.
 		const existingUser = await authModel.findById(userId);
 
 		// Condition si l'utilisateur n'existe pas en BDD.
@@ -264,31 +327,69 @@ module.exports.userProfile = async (req, res) => {
 			return res.status(404).json({ message: 'Utilisateur non trouvé.' });
 		}
 
-		// Réponse de succès.
-		res.status(200).json({ message: 'Utilisateur: ', existingUser });
+		// Supprimer l'ancienne image sur Cloudinary si elle existe.
+		if (req.file) {
+			// Supprimer l'ancienne image s'il y en a une.
+			if (existingUser.avatarPublicId) {
+				await cloudinary.uploader.destroy(existingUser.avatarPublicId);
+			}
+			// Redonne une nouvelle URL et un nouvel id à l'image.
+			existingUser.avatarUrl = req.cloudinaryUrl;
+			existingUser.avatarPublicId = req.file.public_id;
+		}
+
+		// Mettre à jour les infos de l'utilisateur.
+		existingUser.lastname = lastname;
+		existingUser.firstname = firstname;
+		existingUser.birthday = birthday;
+		existingUser.address = address;
+		existingUser.zipcode = zipcode;
+		existingUser.city = city;
+		existingUser.phone = phone;
+
+		// Mettre à jour l'email uniquement si fourni dans la requête.
+		if (email) {
+			existingUser.email = email;
+		}
+
+		// Sauvegarder les modifs.
+		const updateProfile = await existingUser.save();
+
+		// Code de réussite avec le log.
+		res.status(200).json({ message: 'Profil modifié avec succès: ', user: updateProfile });
 	} catch (error) {
-		console.error("Erreur lors de la récupération de l'utilisateur: ", error.message);
-		res.status(500).json({ message: "Erreur lors de la récupération de l'utilisateur." });
+		console.error(error);
+		res.status(500).json({ message: 'Erreur lors de la mise à jour du profil.' });
 	}
 };
 
-// Fonction pour le dashboard.
-module.exports.dashboard = async (req, res) => {
+// Fonction pour supprimer un utilisateur en tant qu'admin.
+module.exports.adminDelete = async (req, res) => {
 	try {
-		// Verifier si l'utilisateur est un admin
-		if (req.user.role === 'admin') {
-			// Definition de req.isAdmin sera egal a true pour les admins
-			req.isAdmin = true;
-			// Envoyer une réponse de succès
-			return res.status(200).json({ message: 'Bienvenue Admin' });
-		} else {
-			// Envoyer une réponse pour les utilisateurs non admin
+		// Vérifier si l'utilisateur est admin.
+		if (req.user.role !== 'admin') {
+			// Retour d'un message d'erreur.
 			return res.status(403).json({
-				message: 'Action non autorisée, seuls les admins peuvent accéder à cette page.',
+				message: 'Action non autorisée. Seul un admin peut réaliser cette action.',
 			});
 		}
+		// Récupération de l'ID de l'utilisateur.
+		const userId = req.params.id;
+
+		// Déclaration de variable qui va vérifier si l'utilisateur existe.
+		const existingUser = await authModel.findById(userId);
+
+		// Suppression de l'avatar de Cloudinary si celui-ci existe.
+		if (existingUser.avatarPublicId) {
+			await cloudinary.uploader.destroy(existingUser.avatarPublicId);
+		}
+
+		// Supprimer l'utilisateur de la BDD.
+		await authModel.findByIdAndDelete(userId);
+
+		// Message de succès.
+		res.status(200).json({ message: 'Utilisateur supprimé avec succès.' });
 	} catch (error) {
-		console.error(error);
-		res.status(500).json({ message: 'Erreur lors de la connexion.' });
+		res.status(500).json({ message: "Erreur lors de la suppression de l'utilisateur." });
 	}
 };
