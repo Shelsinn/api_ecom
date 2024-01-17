@@ -61,7 +61,6 @@ const start = async () => {
 	try {
 		// Connexion à la BDD.
 		await connectDB();
-		console.log('Connexion à la BDD réussie.');
 		// Démarrage du serveur sur le port spécifié.
 		app.listen(PORT, () => console.log(`Le serveur a démarré sur le port ${PORT}.`));
 	} catch (error) {

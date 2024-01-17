@@ -62,6 +62,11 @@ module.exports.register = async (req, res) => {
 		res.status(201).json({ message: 'Compte utilisateur créé avec succès.', user: user });
 	} catch (error) {
 		// Renvoie une erreur s'il y a un problème lors de l'enregistrement de l'utilisateur.
+		console.error("Erreur lors de l'enregistrement de l'utilisateur: ", error.message);
+		// Supprimer l'image téléchargée si elle existe.
+		if (req.file && req.file.public_id) {
+			await cloudinary.uploader.destroy(req.file.public_id);
+		}
 		res.status(500).json({ message: "Erreur lors de l'enregistrement de l'utilisateur." });
 	}
 };
