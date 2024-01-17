@@ -25,7 +25,7 @@ module.exports.register = async (req, res) => {
 			return res.status(400).json({ errors: errors.array() });
 		}
 		// Récupération des données du formulaire.
-		const { lastname, firstname, email, password, birthday, address, zipcode, city, phone } =
+		const { lastname, firstname, birthday, address, zipcode, city, phone, email, password } =
 			req.body;
 
 		// Vérifier si une image est téléversée.
@@ -37,6 +37,10 @@ module.exports.register = async (req, res) => {
 		const existingAuth = await authModel.findOne({ email });
 
 		if (existingAuth) {
+			// Supprimer l'image téléchargée.
+			if (req.file && req.file.public_id) {
+				await cloudinary.uploader.destroy(req.file.public_id);
+			}
 			// Renvoie une erreur si l'email existe déjà.
 			return res.status(400).json({ message: 'Cet email est déjà utilisé.' });
 		}
@@ -48,21 +52,21 @@ module.exports.register = async (req, res) => {
 		const user = authModel.create({
 			lastname,
 			firstname,
-			email,
-			password,
 			birthday,
 			address,
 			zipcode,
 			city,
 			phone,
+			email,
+			password,
 			avatarUrl,
 			avatarPublicId,
 		});
 		// Renvoie une réponse positive si l'utilisateur est bien enregistré.
-		res.status(201).json({ message: 'Compte utilisateur créé avec succès.', user: user });
-	} catch (error) {
+		res.status(201).json({ message: 'Compte utilisateur créé avec succès: ', user: user });
+	} catch (err) {
 		// Renvoie une erreur s'il y a un problème lors de l'enregistrement de l'utilisateur.
-		console.error("Erreur lors de l'enregistrement de l'utilisateur: ", error.message);
+		console.error("Erreur lors de l'enregistrement de l'utilisateur: ", err.message);
 		// Supprimer l'image téléchargée si elle existe.
 		if (req.file && req.file.public_id) {
 			await cloudinary.uploader.destroy(req.file.public_id);

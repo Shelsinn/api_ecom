@@ -11,15 +11,6 @@ router.post(
 	productController.createProduct
 );
 
-// Route pour récupérer tous les produits.
-router.get('/all-products', productController.getAllProducts);
-
-// Route pour récupérer un seul produit avec son ID.
-router.get('/product/:id', productController.getProductById);
-
-// Route pour supprimer un produit avec son ID en tant qu'admin.
-router.delete('/delete-product/:id', authMiddleware.authenticate, productController.deleteProduct);
-
 // Route pour modifier un produit avec son ID en tant qu'admin.
 router.put(
 	'/update-product/:id',
@@ -27,5 +18,14 @@ router.put(
 	cloudinaryUpload,
 	productController.updateProduct
 );
+
+// Route pour supprimer un produit avec son ID en tant qu'admin.
+router.delete('/delete-product/:id', authMiddleware.authenticate, productController.deleteProduct);
+
+// Route pour récupérer tous les produits.
+router.get('/all-products', productController.getAllProducts);
+
+// Route pour récupérer un seul produit avec son ID.
+router.get('/product/:id', productController.getProductById);
 
 module.exports = router;

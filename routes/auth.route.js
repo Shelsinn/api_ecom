@@ -15,13 +15,13 @@ router.post('/login', authController.login);
 ////////// Routes USERS. //////////
 
 // Route pour lire ses informations.
-router.get('/profile/:id', authController.userProfile);
+router.get('/profile/:id', authMiddleware.verifToken, authController.userProfile);
 
 // Route pour la modification du profil.
-router.put('/update/:id', cloudinaryUpload, authController.update);
+router.put('/update/:id', authMiddleware.verifToken, cloudinaryUpload, authController.update);
 
 // Route pour supprimer notre profil.
-router.delete('/delete/:id', authController.delete);
+router.delete('/delete/:id', authMiddleware.verifToken, authController.delete);
 
 ////////// Routes ADMIN. //////////
 
