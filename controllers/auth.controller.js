@@ -49,7 +49,7 @@ module.exports.register = async (req, res) => {
 		const avatarUrl = req.cloudinaryUrl;
 		const avatarPublicId = req.file.public_id;
 		// Création d'un nouvel utilisateur.
-		const user = authModel.create({
+		const user = await authModel.create({
 			lastname,
 			firstname,
 			birthday,
