@@ -56,7 +56,7 @@ const sendVerificationEmail = async (to, verificationToken) => {
 
 // Fonction de vérification pour la réinitialisation du mot de passe.
 const sendResetPasswordEmail = async (to, resetPasswordLink) => {
-	const resetLink = `http://localhost:5000/reset-password?token=${resetPasswordLink}`;
+	const resetLink = `http://localhost:5000/update-password?token=${resetPasswordLink}`;
 
 	const mailOptions = {
 		from: 'unmailbidon@gmail.com',
