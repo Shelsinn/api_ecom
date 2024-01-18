@@ -13,6 +13,42 @@ const jwt = require('jsonwebtoken');
 // Import de Cloudinary.
 const cloudinary = require('cloudinary').v2;
 
+// Import du module Nodemailer pour l'envoi de mails.
+const nodemailer = require('nodemailer');
+
+// Import du module Crypto pour la génération de token.
+const crypto = require('crypto');
+
+const transporter = nodemailer.createTransport({
+	host: 'sandbox.smtp.mailtrap.io',
+	port: 2525,
+	auth: {
+		user: process.env.MAILTRAP_USER,
+		pass: process.env.MAILTRAP_PASS,
+	},
+});
+
+// Déclaration de variables pour générer un token avec crypto.
+const generateVerificationToken = () => {
+	return crypto.randomBytes(32).toString('hex');
+};
+
+// Fonction de vérification de l'envoi d'email.
+const sendVerificationEmail = async (to, verificationToken) => {
+	// Variable qui va contenir le lien de vérification.
+	const verificationLink = `http://localhost:5000/verify?token=${verificationToken}`;
+
+	const mailOptions = {
+		from: 'unmailbidon@gmail.com',
+		to,
+		subject: 'Vérification de votre adresse mail.',
+		text: `Merci de vérifier votre email en cliquant sur ce <a href=${verificationLink}>lien</a>.`,
+		html: `<p>Merci de cliquer sur le lien pour vérifier votre adresse mail et pouvoir vous connecter.</p>`,
+	};
+
+	await transporter.sendMail(mailOptions);
+};
+
 // Fonction pour l'inscription.
 module.exports.register = async (req, res) => {
 	// Validation des données d'entrée.
@@ -62,8 +98,23 @@ module.exports.register = async (req, res) => {
 			avatarUrl,
 			avatarPublicId,
 		});
+
+		// Vérification de la génération de token sécurisé.
+		const verificationToken = generateVerificationToken();
+
+		// Sauvegarder le token généré dans la BDD et l'associer à l'utilisateur.
+		user.emailVerificationToken = verificationToken;
+		user.emailVerificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+		await user.save();
+
+		// Envoyer la vérification d'email.
+		await sendVerificationEmail(user.email, verificationToken);
+
 		// Renvoie une réponse positive si l'utilisateur est bien enregistré.
-		res.status(201).json({ message: 'Compte utilisateur créé avec succès: ', user: user });
+		const userMail = user.email;
+		res.status(201).json({
+			message: `Utilisateur créé avec succès. Merci de bien vouloir cliquer sur le lien envoyé à ${userMail} pour vérifier votre compte.`,
+		});
 	} catch (err) {
 		// Renvoie une erreur s'il y a un problème lors de l'enregistrement de l'utilisateur.
 		console.error("Erreur lors de l'enregistrement de l'utilisateur: ", err.message);
