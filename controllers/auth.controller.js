@@ -28,7 +28,7 @@ const transporter = nodemailer.createTransport({
 	},
 });
 
-// Déclaration de variables pour générer un token avec crypto.
+// Déclaration de variables pour générer un token avec  le module crypto.
 const generateVerificationToken = () => {
 	return crypto.randomBytes(32).toString('hex');
 };
