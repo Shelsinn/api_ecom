@@ -28,8 +28,13 @@ const transporter = nodemailer.createTransport({
 	},
 });
 
-// Déclaration de variables pour générer un token avec  le module crypto.
+// Déclaration de variables pour générer un token email avec le module crypto.
 const generateVerificationToken = () => {
+	return crypto.randomBytes(32).toString('hex');
+};
+
+// Déclaration de variables pour générer un token password avec le module crypto.
+const generateVerificationTokenPassword = () => {
 	return crypto.randomBytes(32).toString('hex');
 };
 
@@ -44,6 +49,21 @@ const sendVerificationEmail = async (to, verificationToken) => {
 		subject: 'Vérification de votre adresse mail.',
 		text: `Merci de vérifier votre email en cliquant sur ce <a href=${verificationLink}>lien</a>.`,
 		html: `<p>Merci de cliquer sur le lien pour vérifier votre adresse mail et pouvoir vous connecter.</p>`,
+	};
+
+	await transporter.sendMail(mailOptions);
+};
+
+// Fonction de vérification pour la réinitialisation du mot de passe.
+const sendResetPasswordEmail = async (to, resetPasswordLink) => {
+	const resetLink = `http://localhost:5000/reset-password?token=${resetPasswordLink}`;
+
+	const mailOptions = {
+		from: 'unmailbidon@gmail.com',
+		to,
+		subject: 'Réinitialisation du mot de passe.',
+		text: `Merci de cliquer sur ce <a href=${resetLink}>lien</a> pour réinitialiser votre mot de passe.`,
+		html: `<p>Merci de cliquer sur le lien pour réinitialiser votre mot de passe.</p>`,
 	};
 
 	await transporter.sendMail(mailOptions);
@@ -163,6 +183,46 @@ module.exports.verifyEmail = async (req, res) => {
 	}
 };
 
+// Fonction pour la demande de reset de mot de passe par mail.
+module.exports.forgotPassword = async (req, res) => {
+	try {
+		const { email } = req.body;
+
+		// Rechercher l'user par l'email.
+		const user = await authModel.findOne({ email });
+
+		// Condition si aucun utilisateur n'est trouvé.
+		if (!user) {
+			return res.status(404).json({ message: 'Aucun utilisateur trouvé avec cet email.' });
+		}
+
+		// Générer un token de réinitialisation de mot de passe.
+		const resetPasswordToken = generateVerificationTokenPassword();
+
+		// Enregistrer le token de réinitialisation de mot de passe et sa date d'expiration en BDD.
+		user.resetPasswordToken = resetPasswordToken;
+		user.resetPasswordTokenExpires = new Date(Date.now() + 60 * 60 * 1000);
+		await user.save();
+
+		// Envoyer un email avec le lien de réintialisation de mot de passe.
+		await sendResetPasswordEmail(user.email, resetPasswordToken);
+
+		// Message de réussite.
+		res.status(200).json({
+			message:
+				'Un email de réinitialisation de mot de passe a été envoyé à votre adresse email liée à ce compte.',
+		});
+	} catch (error) {
+		console.error(
+			'Erreur lors de la demande de réinitialisation du mot de passe: ',
+			error.message
+		);
+		return res
+			.status(500)
+			.json({ message: 'Erreur lors de la demande de réinitialisation du mot de passe.' });
+	}
+};
+
 // Fonction pour la connexion.
 module.exports.login = async (req, res) => {
 	// Validation des données d'entrée.
@@ -250,7 +310,8 @@ module.exports.update = async (req, res) => {
 		const userId = req.params.id;
 
 		// Récupération des données du formulaire.
-		const { lastname, firstname, email, birthday, address, zipcode, city, phone } = req.body;
+		const { lastname, firstname, email, newPassword, birthday, address, zipcode, city, phone } =
+			req.body;
 
 		// Vérifier si l'utilisateur existe avant de modifier.
 		const existingUser = await authModel.findById(userId);
@@ -285,11 +346,16 @@ module.exports.update = async (req, res) => {
 			existingUser.email = email;
 		}
 
+		// Mettre à jour le mot de passe uniquement si fourni dans la requête.
+		if (newPassword) {
+			existingUser.password = newPassword;
+		}
+
 		// Sauvegarder les modifs.
-		const updateProfile = await existingUser.save();
+		await existingUser.save();
 
 		// Code de réussite avec le log.
-		res.status(200).json({ message: 'Profil modifié avec succès: ', user: updateProfile });
+		res.status(200).json({ message: 'Profil modifié avec succès: ', user: existingUser });
 	} catch (error) {
 		console.error(error);
 		res.status(500).json({ message: 'Erreur lors de la mise à jour du profil.' });

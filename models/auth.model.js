@@ -73,6 +73,13 @@ const authSchema = new mongoose.Schema({
 	emailVerificationTokenExpires: {
 		type: Date,
 	},
+	resetPasswordToken: {
+		type: String,
+		default: null,
+	},
+	resetPasswordTokenExpires: {
+		type: Date,
+	},
 	timestamp: {
 		type: Date,
 		default: Date.now,
