@@ -126,6 +126,43 @@ module.exports.register = async (req, res) => {
 	}
 };
 
+// Fonction pour la vérification d'email.
+module.exports.verifyEmail = async (req, res) => {
+	try {
+		// Récupération du token pour le mettre en paramètre d'url.
+		const { token } = req.params;
+
+		// Trouver l'utilisateur avec le token associé.
+		const user = await authModel.findOne({ emailVerificationToken: token });
+
+		if (!user) {
+			return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+		}
+
+		// Vérifier si le token n'a pas expiré.
+		if (user.emailVerificationTokenExpires && user.emailVerificationTokenExpires < Date.now()) {
+			await cloudinary.uploader.destroy(user);
+			await user.remove();
+			return res.status(400).json({ message: 'Le token a expiré.' });
+		}
+
+		// Mettre à jour isEmailVerified à true et sauvegarder.
+		user.isEmailVerified = true;
+		// Effacer le token après vérification.
+		user.emailVerificationToken = undefined;
+		// Effacer la date d'expiration du token.
+		user.emailVerificationTokenExpires = undefined;
+		// Sauvegarder.
+		await user.save();
+
+		// Message de réussite.
+		res.status(200).json({ message: 'Email vérifié avec succès.' });
+	} catch (error) {
+		console.error("Erreur lors de la vérification de l'email: ", error.message);
+		res.status(500).json({ message: "Erreur lors de la vérification de l'email." });
+	}
+};
+
 // Fonction pour la connexion.
 module.exports.login = async (req, res) => {
 	// Validation des données d'entrée.
