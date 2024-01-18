@@ -15,6 +15,9 @@ router.get('/verify-email/:token', authController.verifyEmail);
 // Route pour envoyer un email de reset de mot de passe.
 router.post('/forgot-password', authController.forgotPassword);
 
+// Route pour réinitialiser/modifier le mot de passe.
+router.put('/update-password/:token', authController.updatePassword);
+
 // Route pour la connexion.
 router.post('/login', authController.login);
 

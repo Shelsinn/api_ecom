@@ -135,9 +135,9 @@ module.exports.register = async (req, res) => {
 		res.status(201).json({
 			message: `Utilisateur créé avec succès. Merci de bien vouloir cliquer sur le lien envoyé à ${userMail} pour vérifier votre compte.`,
 		});
-	} catch (err) {
+	} catch (error) {
 		// Renvoie une erreur s'il y a un problème lors de l'enregistrement de l'utilisateur.
-		console.error("Erreur lors de l'enregistrement de l'utilisateur: ", err.message);
+		console.error("Erreur lors de l'enregistrement de l'utilisateur: ", error.message);
 		// Supprimer l'image téléchargée si elle existe.
 		if (req.file && req.file.public_id) {
 			await cloudinary.uploader.destroy(req.file.public_id);
@@ -220,6 +220,42 @@ module.exports.forgotPassword = async (req, res) => {
 		return res
 			.status(500)
 			.json({ message: 'Erreur lors de la demande de réinitialisation du mot de passe.' });
+	}
+};
+
+// Fonction pour reset le mot de passe avec le token de reset.
+module.exports.updatePassword = async (req, res) => {
+	try {
+		// Récupération du token pour le mettre en param URL.
+		const { token } = req.params;
+		// Ajout de deux nouveaux champs dans la requête.
+		const { newPassword, confirmNewPassword } = req.body;
+		// Vérifier si les champs de mots de passe correspondent.
+		if (newPassword !== confirmNewPassword) {
+			return res.status(400).json({ message: 'Les mots de passe ne correspondent pas.' });
+		}
+		// Trouver l'user par le token de reset de MDP.
+		const user = await authModel.findOne({
+			resetPasswordToken: token,
+			resetPasswordTokenExpires: { $gt: Date.now() },
+		});
+
+		// Vérifier si le token est valide.
+		if (!user) {
+			return res.status(400).json({ message: 'Token invalide ou expiré.' });
+		}
+		// Mettre à jour le MDP.
+		user.password = newPassword;
+		// Effacer le token et son expiration.
+		user.resetPasswordToken = undefined;
+		user.resetPasswordTokenExpires = undefined;
+		// Enregistrer.
+		await user.save();
+		// Réponse de succès.
+		res.status(200).json({ message: 'Mot de passe modifié avec succès.' });
+	} catch (error) {
+		console.error('Erreur lors de la modification du mot de passe: ', error.message);
+		return res.status(500).json({ message: 'Erreur lors de la modification du mot de passe.' });
 	}
 };
 
