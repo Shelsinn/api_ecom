@@ -32,14 +32,14 @@ describe('Register route testing', () => {
 		const response = await request(app)
 			.post('/api/register')
 			// Remplissage des champs du formulaire.
-			.field('lastname', 'Statham')
-			.field('firstname', 'Jason')
-			.field('birthday', '15/06/1986')
-			.field('address', '45 rue du roundhouse kick')
-			.field('zipcode', '56896')
-			.field('city', 'piedville')
+			.field('lastname', 'Adminest')
+			.field('firstname', 'Adminer')
+			.field('birthday', '21/04/1992')
+			.field('address', '45 rue du dev')
+			.field('zipcode', '89560')
+			.field('city', 'binaryville')
 			.field('phone', '0606060606')
-			.field('email', 'statham.jason@gmail.com')
+			.field('email', 'random.mail@gmail.com')
 			.field('password', '123456')
 			// Attache un fichier à la requête (exemple: image).
 			.attach('image', path.resolve(__dirname, '../images/jason.jpg'));

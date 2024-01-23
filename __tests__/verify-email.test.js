@@ -32,7 +32,7 @@ describe('Verify-email route testing', () => {
 	// Avant tous les tests, récupérer un utilisateur avec un token valide dans la base de données.
 	beforeAll(async () => {
 		const user = await authModel.findOne({
-			email: 'statham.jason@gmail.com',
+			email: 'random.mail@gmail.com',
 		});
 		// Vérification user.
 		if (user) {
