@@ -28,10 +28,12 @@ afterAll(async () => {
 describe('Forgot password route testing', () => {
 	// Variable pour stocker l'espion findOneAndUpdate.
 	let findOneAndUpdateSpy;
+	let saveSpy;
 
 	// Créer un espion sur la méthode findOneAndUpdate avant chaque test.
 	beforeEach(() => {
 		findOneAndUpdateSpy = jest.spyOn(authModel, 'findOneAndUpdate');
+		saveSpy = jest;
 	});
 	// Restaurer les mocks après les tests.
 	afterEach(() => {
@@ -49,25 +51,20 @@ describe('Forgot password route testing', () => {
 		};
 		findOneAndUpdateSpy.mockResolvedValue(existingUser);
 
-		try {
-			// Déclaration de réponse à la requête après l'avoir effectuée.
-			const response = await request(app).post('/api/forgot-password').send({
-				email: 'statham.jason@gmail.com',
-			});
+		// Déclaration de réponse à la requête après l'avoir effectuée.
+		const response = await request(app).post('/api/forgot-password').send({
+			email: 'jcvd@gmail.com',
+		});
 
-			// Réponse de succès avec status 200.
-			expect(response.status).toBe(200);
+		// Réponse de succès avec status 200.
+		expect(response.status).toBe(200);
 
-			// Vérification du message du controller.
-			expect(response.body).toEqual({
-				message:
-					'Un email de réinitialisation de mot de passe a été envoyé à votre adresse email liée à ce compte.',
-			});
-			// S'assurer que la méthode save n'a pas été appelée.
-			expect(authModel.prototype.save).not.toHaveBeenCalled();
-		} catch (error) {
-			// Faire passer le test même si une erreur est levée.
-			expect(true).toBe(true);
-		}
+		// Vérification du message du controller.
+		expect(response.body).toEqual({
+			message:
+				'Un email de réinitialisation de mot de passe a été envoyé à votre adresse email liée à ce compte.',
+		});
+		// S'assurer que la méthode save n'a pas été appelée.
+		expect(authModel.prototype.save).not.toHaveBeenCalled();
 	});
 });

@@ -10,6 +10,9 @@ const app = require('../server');
 // Import JWT.
 const jwt = require('jsonwebtoken');
 
+// Import model.
+const authModel = require('../models/auth.model');
+
 // Fonction utilitaire pour générer un token d'authentification.
 function generateAuthToken(userId, role) {
 	const secretKey = process.env.JWT_SECRET;
@@ -34,29 +37,50 @@ afterAll(async () => {
 });
 
 // Bloc de test pour récupérer tous les utilisateurs.
-describe('admin-side one user by ID route testing', () => {
-	it('Should get one user by its ID if user trying to get them is an admin.', async () => {
+describe('admin-side update user by ID route testing', () => {
+	it('Should update one user by its ID if user trying to get them is an admin.', async () => {
 		// ID de l'user admin dans la BDD.
 		const adminUserId = '65afc49c53886f142ae51dd6';
 
-		// Id de l'utilisateur à vérifier.
-		const userIdToGet = '65ae4769139d0bf551d9c616';
+		// Id de l'utilisateur à update.
+		const userIdToUpdate = '65ae4769139d0bf551d9c616';
 
 		// Générer un token pour l'admin.
 		const authToken = generateAuthToken(adminUserId);
 
-		// Faire une demande pour récupérer tous les users.
+		// Faire une demande pour update.
 		const response = await request(app)
-			.get(`/api/user/${userIdToGet}`)
-			.set('Authorization', `Bearer ${authToken}`);
+			.put(`/api/admin-update/${userIdToUpdate}`)
+			.set('Authorization', `Bearer ${authToken}`)
+			.send({
+				lastname: 'VD',
+				firstname: 'JC',
+				birthday: '18/11/1955',
+				address: '20 rue du grand écart',
+				zipcode: '45879',
+				city: 'Awarecity',
+				phone: '0808080808',
+				email: 'jcvd@gmail.fr',
+			});
 
 		// Log de la réponse.
 		console.log(response.body);
 
 		// S'assurer que la demande est réussie.
 		expect(response.status).toBe(200);
-		expect(response.body).toHaveProperty('message', 'Utilisateur: ');
-		expect(response.body).toHaveProperty('existingUser');
+		expect(response.body).toHaveProperty('message', 'Profil modifié avec succès: ');
+		expect(response.body).toHaveProperty('user');
+
+		// S'assurer que les infos utilisateur ont bien été mises à jour.
+		const updateUser = await authModel.findById(userIdToUpdate);
+		expect(updateUser.lastname).toBe('VD');
+		expect(updateUser.firstname).toBe('JC');
+		expect(updateUser.birthday).toBe('18/11/1955');
+		expect(updateUser.address).toBe('20 rue du grand écart');
+		expect(updateUser.zipcode).toBe('45879');
+		expect(updateUser.city).toBe('Awarecity');
+		expect(updateUser.phone).toBe('0808080808');
+		expect(updateUser.email).toBe('jcvd@gmail.fr');
 	});
 
 	// Test si l'utilisateur n'a pas le rôle admin.
@@ -64,16 +88,26 @@ describe('admin-side one user by ID route testing', () => {
 		// Id d'un utilisateur non admin dans la BDD.
 		const nonAdminUserId = '65ae4769139d0bf551d9c616';
 
-		// Id de l'utilisateur à vérifier.
-		const userIdToGet = '65ae4769139d0bf551d9c616';
+		// Id de l'utilisateur à update.
+		const userIdToUpdate = '65ae4769139d0bf551d9c616';
 
 		// Génération d'un token.
 		const authToken = generateAuthToken(nonAdminUserId);
 
-		// Faire la demande pour accéder au dashboard.
+		// Faire la demande pour update.
 		const response = await request(app)
-			.get(`/api/user/${userIdToGet}`)
-			.set('Authorization', `Bearer ${authToken}`);
+			.put(`/api/admin-update/${userIdToUpdate}`)
+			.set('Authorization', `Bearer ${authToken}`)
+			.send({
+				lastname: 'VD',
+				firstname: 'JC',
+				birthday: '18/11/1955',
+				address: '20 rue du grand écart',
+				zipcode: '45879',
+				city: 'Awarecity',
+				phone: '0808080808',
+				email: 'jcvd@gmail.fr',
+			});
 
 		// Log de la réponse.
 		console.log(response.body);

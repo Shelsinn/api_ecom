@@ -24,7 +24,7 @@ module.exports.authenticate = async (req, res, next) => {
 		const user = await authModel.findById(decoded.userId);
 		// Si il n'y a pas d'utilisateur, renvoie un message.
 		if (!user) {
-			return res.status(400).json({ message: 'Utilisateur non trouvé.' });
+			return res.status(400).json({ message: 'Erreur. Utilisateur non trouvé.' });
 		}
 		req.user = user;
 		next();
