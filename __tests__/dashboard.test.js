@@ -14,12 +14,12 @@ const jwt = require('jsonwebtoken');
 const authModel = require('../models/auth.model');
 
 // Fonction utilitaire pour générer un token d'authentification.
-function generateAuthToken(userId, role) {
+function generateAuthToken(user, role) {
 	const secretKey = process.env.JWT_SECRET;
 	const expiresIn = '1h';
 
 	// Utilisation de jwt pour générer le token.
-	return jwt.sign({ userId, role }, secretKey, { expiresIn });
+	return jwt.sign({ user, role }, secretKey, { expiresIn });
 }
 
 // Connexion à la BDD avant exécution des tests.
@@ -40,7 +40,7 @@ afterAll(async () => {
 describe('dashboard route testing', () => {
 	it('Should allow acces to the dashboard for admins only', async () => {
 		// ID de l'user admin dans la BDD.
-		const adminUserId = '65afc49c53886f142ae51dd6';
+		const adminUserId = '65a93e44b417ac4109f6ef2e';
 
 		// Générer un token pour l'admin.
 		const authToken = generateAuthToken(adminUserId, 'admin');
