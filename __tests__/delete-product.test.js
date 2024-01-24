@@ -11,7 +11,7 @@ const app = require('../server');
 const jwt = require('jsonwebtoken');
 
 // Import model.
-const authModel = require('../models/auth.model');
+const productModel = require('../models/product.model');
 
 // Fonction utilitaire pour générer un token d'authentification.
 function generateAuthToken(userId, role) {
@@ -36,22 +36,22 @@ afterAll(async () => {
 	await mongoose.connection.close();
 });
 
-// Bloc de test pour delete un utilisateur.
-describe('admin-side delete user by ID route testing', () => {
+// Bloc de test pour effacer un produit par son ID.
+describe('admin-side delete product by ID route testing', () => {
 	// Test si l'utilisateur n'a pas le rôle admin.
 	it('Should return an error if the user trying to delete is not an admin', async () => {
 		// Id d'un utilisateur non admin dans la BDD.
-		const nonAdminUserId = '65ae4769139d0bf551d9c616';
+		const nonAdminUserId = '65b10be38a1e5f46bd5bc552';
 
-		// Id de l'utilisateur à delete.
-		const userIdToDelete = '65ae4769139d0bf551d9c616';
+		// Id de l'utilisateur à update.
+		const productIdToDelete = '65a677449874eafe4351fafe';
 
 		// Génération d'un token.
 		const authToken = generateAuthToken(nonAdminUserId);
 
 		// Faire la demande pour delete.
 		const response = await request(app)
-			.delete(`/api/admin-delete/${userIdToDelete}`)
+			.delete(`/api/delete-product/${productIdToDelete}`)
 			.set('Authorization', `Bearer ${authToken}`);
 
 		// Log de la réponse.
@@ -61,24 +61,24 @@ describe('admin-side delete user by ID route testing', () => {
 		expect(response.status).toBe(403);
 		expect(response.body).toHaveProperty(
 			'message',
-			'Action non autorisée. Seul un admin peut réaliser cette action.'
+			'Action non autorisée. Seul un admin peut supprimer un produit.'
 		);
 	});
 
-	//Test si l'utilisateur est admin.
-	it('Should delete one user by its ID if user trying to get them is an admin.', async () => {
+	// Test si l'utilisateur est admin.
+	it('Should delete one product by its ID if user trying to do it is an admin.', async () => {
 		// ID de l'user admin dans la BDD.
-		const adminUserId = '65afc49c53886f142ae51dd6';
+		const adminUserId = '65a93e44b417ac4109f6ef2e';
 
-		// Id de l'utilisateur à delete.
-		const userIdToDelete = '65ae4769139d0bf551d9c616';
+		// Id du produit à update.
+		const productIdToDelete = '65b10cc9db013b03a6f45865';
 
 		// Générer un token pour l'admin.
 		const authToken = generateAuthToken(adminUserId);
 
 		// Faire une demande pour delete.
 		const response = await request(app)
-			.delete(`/api/admin-delete/${userIdToDelete}`)
+			.delete(`/api/delete-product/${productIdToDelete}`)
 			.set('Authorization', `Bearer ${authToken}`);
 
 		// Log de la réponse.
@@ -86,10 +86,10 @@ describe('admin-side delete user by ID route testing', () => {
 
 		// S'assurer que la demande est réussie.
 		expect(response.status).toBe(200);
-		expect(response.body).toHaveProperty('message', 'Utilisateur supprimé avec succès.');
+		expect(response.body).toHaveProperty('message', 'Produit supprimé avec succès.');
 
-		// S'assurer que l'utilisateur est bien effacé.'
-		const deleteUser = await authModel.findById(userIdToDelete);
+		// S'assurer que le produit a bien été supprimé.
+		const deleteUser = await productModel.findById(productIdToDelete);
 		expect(deleteUser).toBeNull();
 	});
 });

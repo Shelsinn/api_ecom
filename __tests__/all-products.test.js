@@ -21,10 +21,10 @@ afterAll(async () => {
 	await mongoose.connection.close();
 });
 
-// Bloc de test pour récupérer tous les utilisateurs.
+// Bloc de test pour récupérer tous les produits.
 describe('show all-products route testing', () => {
 	it('Should get all products', async () => {
-		// Faire une demande pour récupérer tous les users.
+		// Faire une demande pour récupérer tous les produits.
 		const response = await request(app).get('/api/all-products');
 
 		// Log de la réponse.

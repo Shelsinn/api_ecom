@@ -36,7 +36,7 @@ afterAll(async () => {
 	await mongoose.connection.close();
 });
 
-// Bloc de test pour récupérer tous les utilisateurs.
+// Bloc de test pour supprimer l'utilisateur.
 describe('delete user by ID route testing', () => {
 	it('Should delete one user by its ID', async () => {
 		// Id de l'utilisateur à supprimer.
@@ -57,7 +57,7 @@ describe('delete user by ID route testing', () => {
 		expect(response.status).toBe(200);
 		expect(response.body).toHaveProperty('message', 'Utilisateur supprimé avec succès.');
 
-		// S'assurer que les infos utilisateur ont bien été mises à jour.
+		// S'assurer que le delete a été fait.
 		const deleteUser = await authModel.findById(userIdToDelete);
 		expect(deleteUser).toBeNull();
 	});

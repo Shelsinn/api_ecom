@@ -36,7 +36,7 @@ afterAll(async () => {
 	await mongoose.connection.close();
 });
 
-// Bloc de test pour récupérer tous les utilisateurs.
+// Bloc de test pour update un utilisateur.
 describe('admin-side update user by ID route testing', () => {
 	it('Should update one user by its ID if user trying to get them is an admin.', async () => {
 		// ID de l'user admin dans la BDD.
