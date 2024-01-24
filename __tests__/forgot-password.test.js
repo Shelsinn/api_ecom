@@ -28,12 +28,15 @@ afterAll(async () => {
 describe('Forgot password route testing', () => {
 	// Variable pour stocker l'espion findOneAndUpdate.
 	let findOneAndUpdateSpy;
-	let saveSpy;
+	let saveMock;
 
 	// Créer un espion sur la méthode findOneAndUpdate avant chaque test.
 	beforeEach(() => {
 		findOneAndUpdateSpy = jest.spyOn(authModel, 'findOneAndUpdate');
-		saveSpy = jest;
+		// Créer un mock pour la méthode save.
+		saveMock = jest.fn();
+		// Espionner la méthode save et la remplacer par le mock.
+		jest.spyOn(authModel.prototype, 'save').mockImplementation(saveMock);
 	});
 	// Restaurer les mocks après les tests.
 	afterEach(() => {
@@ -44,8 +47,8 @@ describe('Forgot password route testing', () => {
 	it('Should send a reset password email if this email exists', async () => {
 		// Supposons entrer un nouvel utilisateur ou le rechercher en BDD.
 		const existingUser = {
-			_id: '65ae4769139d0bf551d9c616',
-			email: 'statham.jason@gmail.com',
+			_id: '65b10be38a1e5f46bd5bc552',
+			email: 'random.mail@gmail.com',
 			resetPasswordToken: 'someToken',
 			resetPasswordTokenExpires: new Date(),
 		};
@@ -53,7 +56,7 @@ describe('Forgot password route testing', () => {
 
 		// Déclaration de réponse à la requête après l'avoir effectuée.
 		const response = await request(app).post('/api/forgot-password').send({
-			email: 'jcvd@gmail.com',
+			email: 'random.mail@gmail.com',
 		});
 
 		// Réponse de succès avec status 200.
@@ -65,6 +68,6 @@ describe('Forgot password route testing', () => {
 				'Un email de réinitialisation de mot de passe a été envoyé à votre adresse email liée à ce compte.',
 		});
 		// S'assurer que la méthode save n'a pas été appelée.
-		expect(authModel.prototype.save).not.toHaveBeenCalled();
+		expect(saveMock).not.toHaveBeenCalled();
 	});
 });
