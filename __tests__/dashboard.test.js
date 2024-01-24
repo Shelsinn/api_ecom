@@ -14,12 +14,12 @@ const jwt = require('jsonwebtoken');
 const authModel = require('../models/auth.model');
 
 // Fonction utilitaire pour générer un token d'authentification.
-function generateAuthToken(user, role) {
+function generateAuthToken(userId, role) {
 	const secretKey = process.env.JWT_SECRET;
 	const expiresIn = '1h';
 
 	// Utilisation de jwt pour générer le token.
-	return jwt.sign({ user, role }, secretKey, { expiresIn });
+	return jwt.sign({ user: { id: userId }, role }, secretKey, { expiresIn });
 }
 
 // Connexion à la BDD avant exécution des tests.
