@@ -328,9 +328,16 @@ module.exports.login = async (req, res) => {
 			return res.status(400).json({ message: 'Email invalide.' });
 		}
 
+		if (user.lockUntil && user.lockUntil < Date.now()) {
+			user.failedLoginAttempts = 0;
+			user.lockUntil = null;
+			await user.save();
+		}
 		// Vérification si le compte est verrouillé.
 		if (user.failedLoginAttempts >= 3) {
 			console.log('Compte verrouillé.');
+			user.lockUntil = Date.now();
+			await user.save();
 			return res
 				.status(400)
 				.json({ message: 'Compte verrouillé, veuillez réessayer plus tard.' });
