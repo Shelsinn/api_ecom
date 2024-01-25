@@ -1,5 +1,6 @@
 const productModel = require('../models/product.model');
 const cloudinary = require('cloudinary').v2;
+const { check } = require('express-validator');
 
 // Fonction pour créer un produit (accessible seulement par l'administrateur).
 module.exports.createProduct = async (req, res) => {
@@ -11,6 +12,14 @@ module.exports.createProduct = async (req, res) => {
 				.status(403)
 				.json({ message: 'Action non autorisée. Seul un admin peut créer un produit.' });
 		}
+
+		// Ces lignes vont vérifier que les champs ne soient pas vides au moment de l'exécution de la requête.
+		await check('title', 'Veuillez entrer le nom du produit.').notEmpty().run(req);
+		await check('description', 'Veuillez entrer la description du produit.')
+			.notEmpty()
+			.run(req);
+		await check('price', 'Veuillez entrer le prix du produit.').notEmpty().run(req);
+
 		// Récupération des données du formulaire.
 		const { title, description, price } = req.body;
 		// Vérification si une image est téléchargée.
