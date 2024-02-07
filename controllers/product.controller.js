@@ -56,7 +56,7 @@ module.exports.getAllProducts = async (req, res) => {
 		res.status(200).json({ message: 'Liste des produits', products });
 	} catch (error) {
 		console.error('Erreur lors de la récupération des produits: ', error.message);
-		res.status(500).json({ message: 'Erreur lors de la récupération des produits.' });
+		res.status(500).json({ message: 'Erreur lors de la récupération de tous les produits.' });
 	}
 };
 
